@@ -1,0 +1,152 @@
+{
+  "name": "Correo - Ecomerce",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1747b796-f496-42f6-86fb-8ef6df0aff60",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cb1d327a-6893-4231-b428-6c18690f470f",
+      "name": "Webhook",
+      "webhookId": "1747b796-f496-42f6-86fb-8ef6df0aff60"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200,
+          "responseKey": "Correo enviado con exito"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "432a2972-3d5e-49b6-a00e-8fb44c4c481c",
+      "name": "Respond to Webhook",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Confirmación de Pedido #{{ $json.body.PEDIDO }}</title>\n    <style>\n        /* Estilos para clientes de correo que soportan CSS en head (Gmail, Apple Mail) */\n        body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }\n        img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }\n        .mobile-padding { padding-left: 20px; padding-right: 20px; }\n    </style>\n</head>\n<body style=\"margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333333;\">\n\n    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"table-layout: fixed; background-color: #f0f2f5;\">\n        <tr>\n            <td align=\"center\" style=\"padding: 40px 0;\">\n                \n                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); overflow: hidden;\">\n                    \n                    <tr>\n                        <td align=\"center\" style=\"padding: 40px 30px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);\">\n                            <h1 style=\"margin: 0; font-size: 28px; color: #ffffff; font-weight: 700; letter-spacing: 0.5px;\">\n                                {{ $json.body.NOMBRE_TIENDA }}\n                            </h1>\n                            <p style=\"margin: 8px 0 0 0; font-size: 14px; color: #ecf0f1; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;\">Confirmación de Pedido</p>\n                        </td>\n                    </tr>\n\n                    <tr>\n                        <td style=\"padding: 40px 40px 20px 40px;\">\n                            <h2 style=\"margin-top: 0; font-size: 22px; font-weight: 600; color: #2c3e50;\">\n                                ¡Hola, {{ $json.body.NOMBRE_CLIENTE }}! 👋\n                            </h2>\n                            <p style=\"margin-bottom: 25px; font-size: 16px; line-height: 1.6; color: #555555;\">\n                                Gracias por tu compra. Estamos preparando tu pedido <strong>#{{ $json.body.PEDIDO }}</strong> realizado el {{ $json.body.FECHA_COMPRA }}. Aquí tienes los detalles:\n                            </p>\n                        </td>\n                    </tr>\n\n                    <tr>\n                        <td style=\"padding: 0 40px;\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse: separate; border-spacing: 0; width: 100%;\">\n                                <thead>\n                                    <tr>\n                                        <th style=\"background-color: #f8f9fa; padding: 12px 10px; font-size: 12px; text-transform: uppercase; color: #7f8c8d; font-weight: 600; text-align: left; border-radius: 6px 0 0 6px;\">Artículo</th>\n                                        <th style=\"background-color: #f8f9fa; padding: 12px 10px; font-size: 12px; text-transform: uppercase; color: #7f8c8d; font-weight: 600; text-align: center;\">Cant.</th>\n                                        <th style=\"background-color: #f8f9fa; padding: 12px 10px; font-size: 12px; text-transform: uppercase; color: #7f8c8d; font-weight: 600; text-align: right; border-radius: 0 6px 6px 0;\">Precio</th>\n                                    </tr>\n                                </thead>\n                                <tbody>\n                                    {{ $json.filas_generadas }}\n                                </tbody>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <tr>\n                        <td style=\"padding: 20px 40px 40px 40px;\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse: collapse;\">\n                                <tr>\n                                    <td style=\"padding-top: 15px; border-top: 2px solid #f0f2f5;\"></td>\n                                    <td style=\"padding-top: 15px; border-top: 2px solid #f0f2f5;\"></td>\n                                </tr>\n                                <tr>\n                                    <td style=\"padding: 5px 0; font-size: 15px; color: #7f8c8d; text-align: left;\">Envío</td>\n                                    <td style=\"padding: 5px 0; font-size: 15px; color: #333333; text-align: right;\">${{ $json.body.COSTO_ENVIO }}</td>\n                                </tr>\n                                <tr>\n                                    <td style=\"padding: 15px 0 0 0; font-size: 18px; font-weight: 700; color: #2c3e50; text-align: left;\">Total</td>\n                                    <td style=\"padding: 15px 0 0 0; font-size: 24px; font-weight: 700; color: #27ae60; text-align: right;\">${{ $json.body.TOTAL }}</td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <tr>\n                        <td align=\"center\" style=\"padding: 30px 40px; background-color: #f8f9fa; border-top: 1px solid #eeeeee;\">\n                            <p style=\"margin: 0 0 10px 0; font-size: 14px; color: #7f8c8d;\">\n                                ¿Tienes dudas? Escríbenos a <a href=\"mailto:{{ $json.body.EMAIL_SOPORTE }}\" style=\"color: #3498db; text-decoration: none;\">{{ $json.body.EMAIL_SOPORTE }}</a>\n                            </p>\n                            <p style=\"margin: 0; font-size: 12px; color: #bdc3c7;\">\n                                &copy; 2025 {{ $json.body.NOMBRE_TIENDA }}. Todos los derechos reservados.\n                            </p>\n                        </td>\n                    </tr>\n\n                </table>\n                \n                <div style=\"height: 40px; line-height: 40px;\">&nbsp;</div>\n            </td>\n        </tr>\n    </table>\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "84066e53-0afd-4e0c-8295-8f34826af751",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos los datos de entrada\nconst inputData = $input.all()[0].json;\n\nlet articulos = $input.first().json.body.ARTICULOS\n\nif (typeof articulos === 'string') {\n    try {\n        articulos = JSON.parse(articulos);\n    } catch (e) {\n        articulos = []; // Si falla, dejamos una lista vacía para que no rompa el flujo\n    }\n}\n\n// Si después de todo no es un array, lo forzamos a ser uno vacío\nif (!Array.isArray(articulos)) {\n    articulos = [];\n}\n\n// 2. Variable para el HTML\nlet filasHtml = \"\";\n\n// 3. Loop seguro (Verifica mayúsculas y minúsculas)\nfor (const item of articulos) {\n    // Intentamos leer las propiedades ya vengan en mayúscula o minúscula\n    const nombre = item.nombre || item.NOMBRE || item.Nombre || \"Producto sin nombre\";\n    const cantidad = item.cantidad || item.CANTIDAD || item.Cantidad || 0;\n    const subtotal = item.subtotal || item.SUBTOTAL || item.Subtotal || item.precio || 0;\n\n    // Aquí aplico los estilos \"Clean UI\" para que combinen con tu nueva plantilla\n    filasHtml += `\n    <tr>\n        <td style=\"padding: 12px 10px; border-bottom: 1px solid #eeeeee; color: #555555; font-size: 14px;\">\n            ${nombre}\n        </td>\n        <td style=\"padding: 12px 10px; border-bottom: 1px solid #eeeeee; color: #555555; font-size: 14px; text-align: center;\">\n            ${cantidad}\n        </td>\n        <td style=\"padding: 12px 10px; border-bottom: 1px solid #eeeeee; color: #333333; font-size: 14px; text-align: right; font-weight: 600;\">\n            $${subtotal}\n        </td>\n    </tr>\n  `;\n}\n\n// 4. Si no hubo artículos, ponemos una fila avisando (opcional, para depurar)\nif (filasHtml === \"\") {\n    filasHtml = `<tr><td colspan=\"3\" style=\"padding: 20px; text-align:center; color: red;\">⚠️ No se encontraron artículos en los datos (Revisar nodo anterior)</td></tr>`;\n}\n\n// 5. Devolvemos el resultado\nreturn {\n  json: {\n    ...inputData,\n    filas_generadas: filasHtml\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        0
+      ],
+      "id": "ee7ba856-d7ad-4e15-b912-2bb4a196b5f5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('Webhook').item.json.body.EMAIL_SOPORTE }}",
+        "toEmail": "={{ $('Webhook').item.json.body.CORREO_CLIENTE }}",
+        "subject": "={{ $('Webhook').item.json.body.ASUNTO }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "3aa6cd50-fc92-4cc4-bebb-572be29af54d",
+      "name": "Send email",
+      "webhookId": "19d2d966-1ca0-4450-9b78-e2f686ceb8e1",
+      "credentials": {
+        "smtp": {
+          "id": "fs7nC7A683iMC9Ie",
+          "name": "SMTP account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timezone": "America/Mexico_City",
+    "errorWorkflow": "jPXtSR3cTn53Lv4D"
+  },
+  "versionId": "9d14c00b-4f4d-463e-ac5a-ce9376ddcec3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "89c6c2edd943b192390ac9e61bb64d2e4fae7e0dac78df1a39550bd244050546"
+  },
+  "id": "jPXtSR3cTn53Lv4D",
+  "tags": []
+}

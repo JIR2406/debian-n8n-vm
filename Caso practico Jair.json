@@ -1,0 +1,1375 @@
+{
+  "name": "Caso practico Jair",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        16
+      ],
+      "id": "fa1af830-b1b2-4043-aa95-b91c76956251",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "B:B"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        32
+      ],
+      "id": "0c1b6757-32df-4ea5-aa32-11b3f2532ffb",
+      "name": "Get row(s) in sheet",
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. OBTENER LOS LEADS VIEJOS\n\n// para acceder solamente a los datos provenientes de ese nodo.\nconst existingLeads = $items(\"Get row(s) in sheet\");\n\nconst existingDomains = existingLeads.map(item => {\n\n    return normalizeDomain(item.json.Dominio); \n});\n\nconst existingSet = new Set(existingDomains);\n\n\nconst newLeads = $items(\"Run an Actor and get dataset\");\n\n// Función para limpiar URLS (quita http, www, etc para comparar bien)\nfunction normalizeDomain(url) {\n    if (!url) return \"\";\n    try {\n        // Si no tiene protocolo, le agregamos https para que URL() no falle\n        if (!url.startsWith('http')) url = 'https://' + url;\n        let domain = new URL(url).hostname;\n        return domain.replace('www.', '').toLowerCase();\n    } catch (e) {\n        // En caso de error (URL inválida), devuelve la URL original en minúsculas\n        return String(url).toLowerCase();\n    }\n}\n\n// 3. FILTRAR\nconst filteredLeads = newLeads.filter(leadItem => {\n    // Intenta usar 'website' o 'url' del Apify lead\n    const apifyUrl = leadItem.json.website || leadItem.json.url; \n    const normalizedApify = normalizeDomain(apifyUrl);\n\n    // Si el dominio ya existe en el Set de Google Sheets, lo descartamos (retorna false)\n    return !existingSet.has(normalizedApify);\n});\n\nreturn filteredLeads;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "2c43c4f1-be7e-4a14-b7e7-27d23e91d419",
+      "name": "Code in JavaScript",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "bd75b62d-e4b3-42e8-aa26-6e44b22888c6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        32
+      ],
+      "id": "0cd72487-e89f-4a54-9681-4a8fa3b57938"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Loop Over Items').item.json.emails[0] }}",
+        "subject": "=Propuesta comercial: Manufactura de piezas para {{ $('Loop Over Items').item.json.title }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1920,
+        -176
+      ],
+      "id": "bd972713-db2b-4583-9708-7b5d499c0be1",
+      "name": "Send a message",
+      "webhookId": "6976572d-1fd3-47ea-93b9-b161c4081900",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VWSqaNuT5bpz0ckO",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "html": "<div style=\"background-color: #f4f6f8; padding: 40px 10px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n    \n    <div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);\">\n        \n        <div style=\"background-color: #2c3e50; padding: 20px 30px; text-align: center;\">\n            <h1 style=\"color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;\">AUTOPLASTEK</h1>\n            <span style=\"color: #bdc3c7; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;\">Ingeniería & Inyección</span>\n        </div>\n\n        <div style=\"padding: 40px 30px; color: #4a5568; line-height: 1.8;\">\n            \n            <p style=\"margin-top: 0;\">Hola, equipo de <strong style=\"color: #2c3e50;\">{{ $json['Nombre Empresa'] }}</strong>,</p>\n\n            <p>Le escribo porque hemos seguido de cerca sus desarrollos recientes y detectamos una excelente oportunidad de colaboración operativa.</p>\n\n            <p>En <strong>Autoplastek</strong>, nos especializamos en optimizar la cadena de suministro de manufactura mediante:</p>\n\n            <div style=\"background-color: #f8fafc; border-left: 4px solid #2980b9; padding: 15px 20px; margin: 25px 0; border-radius: 0 4px 4px 0;\">\n                <ul style=\"margin: 0; padding-left: 20px; color: #2d3748;\">\n                    <li style=\"margin-bottom: 10px;\"><strong>Reducción de costos</strong> en moldes y producción en serie.</li>\n                    <li style=\"margin-bottom: 10px;\"><strong>Materiales de alta ingeniería</strong> para componentes críticos.</li>\n                    <li style=\"margin-bottom: 0;\"><strong>Entregas justo a tiempo (JIT)</strong> para evitar paros de línea.</li>\n                </ul>\n            </div>\n\n            <p>Nos gustaría proponerle una breve revisión técnica para evaluar si podemos mejorar sus márgenes actuales.</p>\n\n            <div style=\"text-align: center; margin: 35px 0;\">\n                <a href=\"https://calendly.com/tu-usuario\" style=\"background-color: #2980b9; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 2px 5px rgba(41, 128, 185, 0.3);\">\n                    Ver disponibilidad para llamada\n                </a>\n            </div>\n\n            <p style=\"margin-bottom: 0;\">Quedo atento a sus comentarios.</p>\n        </div>\n\n        <div style=\"background-color: #fcfcfc; border-top: 1px solid #eeeeee; padding: 25px 30px;\">\n            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                    <td valign=\"top\">\n                        <p style=\"margin: 0; font-weight: bold; color: #2c3e50; font-size: 16px;\">Jair Garduño Rodriguez</p>\n                        <p style=\"margin: 5px 0 0; color: #7f8c8d; font-size: 14px;\">Gerente Comercial | Autoplastek</p>\n                        <p style=\"margin: 5px 0 0; font-size: 14px;\">\n                            <a href=\"mailto:jairgarduno47@gmail.com\" style=\"color: #2980b9; text-decoration: none;\">jairgarduno47@gmail.com</a>\n                        </p>\n                         <p style=\"margin: 5px 0 0; font-size: 14px;\">\n                            <a href=\"http://autoplastek.com\" style=\"color: #2980b9; text-decoration: none;\">www.autoplastek.com</a>\n                        </p>\n                    </td>\n                </tr>\n            </table>\n        </div>\n        \n    </div>\n    \n    <div style=\"text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6;\">\n        <p>&copy; 2025 Autoplastek. Todos los derechos reservados.</p>\n    </div>\n\n</div>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        -272
+      ],
+      "id": "bd955657-3e49-4fa9-82cc-1744a21e1ac9",
+      "name": "HTML",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e7677e45-7fc1-421a-a465-b8205221a2a6",
+              "leftValue": "={{ $json.emails}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0f7c1c89-32d2-4d9e-a6dd-c70b547b1fd7",
+              "leftValue": "={{ $json.emails}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthGt",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        16
+      ],
+      "id": "a4db4d04-df35-4022-a962-0b82a5e85652",
+      "name": "If email exist"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre Empresa": "={{ $('Loop Over Items').item.json.title }}",
+            "Categoria": "={{ $('Loop Over Items').item.json.categoryName }}",
+            "Dominio": "={{ $('Loop Over Items').item.json.website }}",
+            "Telefono": "={{ $json.phoneUnformatted }}",
+            "Correo": "={{ $('Loop Over Items').item.json.emails[0] }}",
+            "Ubicación": "={{ $('Loop Over Items').item.json.address }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre Empresa",
+              "displayName": "Nombre Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Dominio",
+              "displayName": "Dominio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ubicación",
+              "displayName": "Ubicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Telefono",
+              "displayName": "Telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correo",
+              "displayName": "Correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de Envio",
+              "displayName": "Fecha de Envio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID correo",
+              "displayName": "ID correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado Seguimiento",
+              "displayName": "Estado Seguimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        -176
+      ],
+      "id": "2abc73b7-2c79-4b74-95ba-1de893a0d7d9",
+      "name": "Append data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1870278038,
+          "mode": "list",
+          "cachedResultName": "Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=1870278038"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre del lead": "={{ $('Loop Over Items').item.json.title }}",
+            "Mensaje de Error": "={{ $json.error }}",
+            "Fecha": "={{ (new Date()).toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' }) }}",
+            "Hora": "={{ $now.setZone('America/Mexico_City').toFormat('hh:mm a') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Hora",
+              "displayName": "Hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre del lead",
+              "displayName": "Nombre del lead",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mensaje de Error",
+              "displayName": "Mensaje de Error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2304,
+        -160
+      ],
+      "id": "8875f12f-a8cd-46b8-b2d3-3f3ce92a0ba1",
+      "name": "Append error code",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Correo": "={{ $('Loop Over Items').item.json.emails[0] }}",
+            "Fecha de Envio": "={{ (new Date()).toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' }) }}",
+            "Estado Seguimiento": "Inicial",
+            "ID correo": "={{ $json.threadId }}"
+          },
+          "matchingColumns": [
+            "Correo"
+          ],
+          "schema": [
+            {
+              "id": "Nombre Empresa",
+              "displayName": "Nombre Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Dominio",
+              "displayName": "Dominio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ubicación",
+              "displayName": "Ubicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Telefono",
+              "displayName": "Telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Correo",
+              "displayName": "Correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha de Envio",
+              "displayName": "Fecha de Envio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID correo",
+              "displayName": "ID correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado Seguimiento",
+              "displayName": "Estado Seguimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2336,
+        -368
+      ],
+      "id": "44147d5e-ddaf-4358-9c02-cb9edad18ccb",
+      "name": "Update status",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1872,
+        224
+      ],
+      "id": "b6348f25-855b-4133-8358-5cafc2158f24",
+      "name": "Wait",
+      "webhookId": "9c9060ce-44fe-4153-999d-0e0fb5da77de"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "nwua9Gu5YrADL7ZDj",
+          "mode": "list",
+          "cachedResultName": "Google Maps Scraper (compass/crawler-google-places)",
+          "cachedResultUrl": "https://console.apify.com/actors/nwua9Gu5YrADL7ZDj/input"
+        },
+        "customBody": "{\n    \"includeWebResults\": false,\n    \"language\": \"es-419\",\n    \"locationQuery\": \"Querétaro, Querétaro\",\n    \"maxCrawledPlacesPerSearch\": 3,\n    \"maxImages\": 0,\n    \"maximumLeadsEnrichmentRecords\": 0,\n    \"scrapeContacts\": true,\n    \"scrapeDirectories\": false,\n    \"scrapeImageAuthors\": false,\n    \"scrapePlaceDetailPage\": false,\n    \"scrapeReviewsPersonalData\": true,\n    \"scrapeTableReservationProvider\": false,\n    \"searchStringsArray\": [\n        \"Ensambladora Automotriz\",\n        \"Fabricante de Componentes de Vehículos\",\n        \"Fabricante de Carcasas Electrónicas\"\n    ],\n    \"skipClosedPlaces\": true,\n    \"website\": \"withWebsite\"\n}",
+        "memory": 2048
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        384,
+        16
+      ],
+      "id": "0aca0bbc-8394-4881-ba2d-4a960f3ae4f4",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyApi": {
+          "id": "HLDuihVjslu647s5",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        784
+      ],
+      "id": "2718abc4-daca-4a48-a9ab-41bf98983135",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Estado Seguimiento",
+              "lookupValue": "Inicial"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        784
+      ],
+      "id": "a327cf4d-c02f-4e4d-8497-16e167b84521",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        784
+      ],
+      "id": "168cb84b-a65f-44bf-a48c-de8e9974b6fb",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me1",
+      "typeVersion": 1,
+      "position": [
+        2784,
+        848
+      ],
+      "id": "571aaa8a-ded2-4840-a008-aa58a4763532"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "get",
+        "threadId": "={{ $json['ID correo'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        560
+      ],
+      "id": "50f5b20f-df3c-41c9-917f-75fbb5e901fd",
+      "name": "Get a thread",
+      "webhookId": "49b987c8-3260-4d52-8c14-38a29ecb114d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VWSqaNuT5bpz0ckO",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        1024
+      ],
+      "id": "04cb3bdb-2e40-4473-9cd9-3a9ae9aae500",
+      "name": "Wait1",
+      "webhookId": "7f899ece-3903-4c13-a5fa-532813f04ff4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "98608314-9741-4086-b919-31aaef89f198",
+              "leftValue": "={{ $json.messages.length }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        576
+      ],
+      "id": "9c6514e3-085d-430e-8c99-5d67afa9808c",
+      "name": "If_count_mails"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b449fceb-55f7-46f0-b78f-c955a84604ca",
+              "leftValue": "={{ $json['Fecha de Envio'] }}",
+              "rightValue": "={{ $today.minus({days: 5}).toFormat('dd/MM/yyyy') }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        800
+      ],
+      "id": "a41e24ab-7c28-4e19-9346-4b1d12c4b036",
+      "name": "If_days"
+    },
+    {
+      "parameters": {
+        "html": "<div style=\"background-color: #f4f6f8; padding: 40px 10px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n    \n    <div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);\">\n        \n        <div style=\"background-color: #2c3e50; padding: 20px 30px; text-align: center;\">\n            <h1 style=\"color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;\">AUTOPLASTEK</h1>\n            <span style=\"color: #bdc3c7; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;\">Ingeniería & Inyección</span>\n        </div>\n\n        <div style=\"padding: 40px 30px; color: #4a5568; line-height: 1.6;\">\n            \n            <p style=\"margin-top: 0;\">Hola al equipo de <strong style=\"color: #2c3e50;\">{{ $('Loop Over Items1').item.json['Nombre Empresa'] }}</strong>,</p>\n\n            <p>Espero que estén teniendo una excelente semana.</p>\n\n            <p>Les escribo brevemente para retomar el contacto respecto a mi correo anterior, por si se perdió en la bandeja de entrada (sé que el día a día operativo puede ser muy ajetreado).</p>\n\n            <p>Sigo convencido de que podemos generar un impacto positivo inmediato en sus líneas de producción.</p>\n\n            <div style=\"background-color: #f8fafc; border-left: 4px solid #2980b9; padding: 15px 20px; margin: 25px 0; border-radius: 0 4px 4px 0;\">\n                <p style=\"margin: 0; color: #2d3748; font-size: 14px;\">\n                    <strong>Recordatorio:</strong> Buscamos apoyarles específicamente en la <span style=\"color: #2980b9;\">reducción de costos en moldes</span> y asegurar sus entregas <span style=\"color: #2980b9;\">Justo a Tiempo</span>.\n                </p>\n            </div>\n\n            <p>¿Tendrán un breve espacio de 10 minutos la próxima semana para una llamada rápida?</p>\n\n            <div style=\"text-align: center; margin: 35px 0;\">\n                <a href=\"https://calendly.com/tu-usuario\" style=\"background-color: #2980b9; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 2px 5px rgba(41, 128, 185, 0.3);\">\n                    Ver disponibilidad\n                </a>\n            </div>\n\n            <p style=\"margin-bottom: 0;\">Quedo atento a sus noticias.</p>\n        </div>\n\n        <div style=\"background-color: #fcfcfc; border-top: 1px solid #eeeeee; padding: 25px 30px;\">\n            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                    <td valign=\"top\">\n                        <p style=\"margin: 0; font-weight: bold; color: #2c3e50; font-size: 16px;\">Jair Garduño Rodriguez</p>\n                        <p style=\"margin: 5px 0 0; color: #7f8c8d; font-size: 14px;\">Gerente Comercial | Autoplastek</p>\n                        <p style=\"margin: 5px 0 0; font-size: 14px;\">\n                            <a href=\"mailto:jairgarduno47@gmail.com\" style=\"color: #2980b9; text-decoration: none;\">jairgarduno47@gmail.com</a>\n                        </p>\n                         <p style=\"margin: 5px 0 0; font-size: 14px;\">\n                            <a href=\"http://autoplastek.com\" style=\"color: #2980b9; text-decoration: none;\">www.autoplastek.com</a>\n                        </p>\n                    </td>\n                </tr>\n            </table>\n        </div>\n        \n    </div>\n    \n    <div style=\"text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6;\">\n        <p>&copy; 2025 Autoplastek. Todos los derechos reservados.</p>\n    </div>\n\n</div>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        448
+      ],
+      "id": "f3503714-c030-461f-90ce-89f9cfd64321",
+      "name": "Plantilla Follow-up"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1870278038,
+          "mode": "list",
+          "cachedResultName": "Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=1870278038"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre del lead": "=Correo Seguimiento: {{ $('Loop Over Items1').item.json['Nombre Empresa'] }}",
+            "Mensaje de Error": "={{ $json.error }}",
+            "Fecha": "={{ (new Date()).toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' }) }}",
+            "Hora": "={{ $now.setZone('America/Mexico_City').toFormat('hh:mm a') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Hora",
+              "displayName": "Hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre del lead",
+              "displayName": "Nombre del lead",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mensaje de Error",
+              "displayName": "Mensaje de Error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2256,
+        656
+      ],
+      "id": "960ca0f9-15ed-4e92-9b3f-a4da3d07eb97",
+      "name": "Append error code1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Loop Over Items1').item.json.Correo }}",
+        "subject": "=Seguimiento correo {{ $('Loop Over Items1').item.json['Fecha de Envio'] }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1904,
+        432
+      ],
+      "id": "7d44ae84-d07f-49d2-9bf0-ac1111a9f12a",
+      "name": "Send a message1",
+      "webhookId": "9f8195ef-b8e5-40bd-9df2-d10c3b2b974c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VWSqaNuT5bpz0ckO",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk",
+          "mode": "list",
+          "cachedResultName": "Prueba Tecnica",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SOy6r1kmTIxdJ4_Fo5g9QNUSQdQH9VzcJjAY-KKbVIk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado Seguimiento": "Seguimiento completo",
+            "Correo": "={{ $('Loop Over Items1').item.json.Correo }}"
+          },
+          "matchingColumns": [
+            "Correo"
+          ],
+          "schema": [
+            {
+              "id": "Nombre Empresa",
+              "displayName": "Nombre Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Dominio",
+              "displayName": "Dominio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ubicación",
+              "displayName": "Ubicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Telefono",
+              "displayName": "Telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Correo",
+              "displayName": "Correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha de Envio",
+              "displayName": "Fecha de Envio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID correo",
+              "displayName": "ID correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado Seguimiento",
+              "displayName": "Estado Seguimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        352
+      ],
+      "id": "b5e9b449-a7e8-49e4-88dd-d5b8e5144f77",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rI8vrUj4QQLFD8LM",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If email exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append error code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If email exist": {
+      "main": [
+        [
+          {
+            "node": "Append data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append data": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append error code": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update status": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If_days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a thread": {
+      "main": [
+        [
+          {
+            "node": "If_count_mails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_count_mails": {
+      "main": [
+        [
+          {
+            "node": "Plantilla Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_days": {
+      "main": [
+        [
+          {
+            "node": "Get a thread",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plantilla Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append error code1": {
+      "main": [
+        [
+          {
+            "node": "Replace Me1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append error code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Replace Me1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "849f2e98-0675-4f8b-8e85-a9ea52db20d8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e132d6d9598d958dc9304b92f8e908ecfc9ab566cff487ee1fa19e7bae05f24d"
+  },
+  "id": "QxEOcIv1C0pTXjZ7",
+  "tags": []
+}

@@ -1,0 +1,555 @@
+{
+  "name": "Clasificacion de correos",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1328,
+        -96
+      ],
+      "id": "b617c896-7570-4ea2-9cd7-ada830e6036c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.headers.subject }},{{ $json.text }},{{ $json.headers.from }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Cursos",
+              "description": "El cuerpo del correo expresa una promocion o algo sobre alguna certificacion o curso"
+            },
+            {
+              "category": "Errores",
+              "description": "Se expresa que ocurrio algun error en cualquier contexto, ya sea de github, de algun sistema, alguna aplicacion o incluso algo sobre credenciales expuestas o algo mas."
+            },
+            {
+              "category": "Licencias",
+              "description": "En general este hablara sobre licencias por vencer, activas, etc."
+            },
+            {
+              "category": "Pagos",
+              "description": "EL correo debe hablar sobre algun pago vencido o realizado"
+            },
+            {
+              "category": "Promociones",
+              "description": "En general habla sobre alguna promocion"
+            },
+            {
+              "category": "Soporte",
+              "description": "Pueden ser correos que nos manden de algun soporte tecnico"
+            },
+            {
+              "category": "Trabajos",
+              "description": "Solamente son respuestas a postulaciones o posibles trabajos exceptuando alertas de empleo. Tambien puede ser respuestas de rh de alguna empresa"
+            },
+            {
+              "category": "TalentsCode",
+              "description": "Solo correos que vengan de rich.talentscode@gmail.com  de talentscode usualmente enviado por RIcardo Rodriguez, solamente correos de talentscode nada mas."
+            },
+            {
+              "category": "Otros",
+              "description": "Cualquier otra cosa"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -944,
+        -192
+      ],
+      "id": "fa81b62d-786c-4851-963f-1c787c7ab789",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        160
+      ],
+      "id": "423d73d5-dd17-4dc3-8450-0b917a2b3366",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "15yTZKHft7doKzcH",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_4635316663850948672"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        -704
+      ],
+      "id": "0c260e95-fd7e-41b8-888e-763c7c999bea",
+      "name": "Add label cursos",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_7830745536368024146"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        -496
+      ],
+      "id": "26e50017-9fdf-44cb-8d27-a74854b3fb16",
+      "name": "Add label errores",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_4374088101343106668"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -320
+      ],
+      "id": "ebae282c-e306-47b5-8024-fb9850326b63",
+      "name": "Add label licencias",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_2602845869877302985"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -144
+      ],
+      "id": "3b4bf6b9-cfcb-4b84-b45c-ed2e0c7e017f",
+      "name": "Add label pagos",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_1132562972939616730"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        16
+      ],
+      "id": "c136472b-06c8-47fb-a9ad-0e8c1acd66ba",
+      "name": "Add label promociones",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_8713094894417927516"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        208
+      ],
+      "id": "5e3fa9e7-621d-48e3-936f-21d5fc59a1af",
+      "name": "Add label soporte",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_5800095038809232076"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        384
+      ],
+      "id": "d03d1896-f0fc-460f-be89-8b70fc07bc9f",
+      "name": "Add label trabajos",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_8684480010673040374"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        608
+      ],
+      "id": "280e95e1-763d-48c5-8110-f28b31e1c613",
+      "name": "Add label otros",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        -80
+      ],
+      "id": "5c07279e-7480-4735-b3c5-6efc8ca28ff5",
+      "name": "Remove label from message",
+      "webhookId": "49adaba2-e586-4671-9994-fc8d26b1dd1f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_5613888993670551662"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        832
+      ],
+      "id": "14b227c0-f119-4789-af2c-eacfe6fa0661",
+      "name": "Add label Talents",
+      "webhookId": "46808feb-f8ec-4a04-9eaa-ca0af18d61a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qtjgt1DdkfOuTa55",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Add label cursos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label errores",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label licencias",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label pagos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label promociones",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label soporte",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label trabajos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label otros",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label Talents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label cursos": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label errores": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label licencias": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label pagos": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label promociones": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label soporte": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label trabajos": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label otros": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label Talents": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "9b586005-8452-427d-b8ab-a347d2bbea48",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "89c6c2edd943b192390ac9e61bb64d2e4fae7e0dac78df1a39550bd244050546"
+  },
+  "id": "zUb41gQIdRlLcdGz",
+  "tags": []
+}
